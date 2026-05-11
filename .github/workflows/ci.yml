@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and smoke test
+    runs-on: ubuntu-latest
+
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_NOLOGO: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build and pack
+        run: dotnet pack LoggerInToolPackageDemo.slnx --configuration Release --output "${{ runner.temp }}/packages" -bl:${{ runner.temp }}/binlogs/build.binlog
+
+      - name: Smoke test package
+        shell: pwsh
+        run: ./sample/pack-and-run.ps1
+
+      - name: Upload nupkg
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: ${{ runner.temp }}/packages/*.nupkg
+          if-no-files-found: error
+
+      - name: Upload binlogs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binlogs
+          path: ${{ runner.temp }}/binlogs/*.binlog
+          if-no-files-found: warn
