@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <!--
+      This project ships INSIDE the DemoLoggerTool .nupkg (via a ProjectReference
+      with OutputItemType=Content), so it must not produce its own package.
+    -->
+    <IsPackable>false</IsPackable>
+    <!--
+      The MSBuild host process supplies these assemblies at runtime, so we only
+      take a compile-time reference (ExcludeAssets=runtime) and don't propagate
+      it (PrivateAssets=all). Standard MSBuild-logger/task pattern.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="17.14.28"
+                      ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.14.28"
+                      ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
+

@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>logger-in-tool-package-demo</ToolCommandName>
+    <PackageId>logger-in-tool-package-demo</PackageId>
+    <Description>A trivial .NET tool that prints the MSBuild '-logger:&lt;path&gt;' argument needed to attach the DemoLogger MSBuild logger that ships alongside it in this same package. Designed to be invoked via `dotnet dnx`.</Description>
+    <PackageTags>msbuild logger dotnet-tool dnx demo</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!--
+      Allow the tool exe to roll forward to a newer .NET runtime if the targeted
+      one isn't installed. The tool itself does almost nothing, so this is safe.
+    -->
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Pull in the DemoLogger project's build output as a None item with
+      CopyToOutputDirectory so it lands in the tool's publish output. This is
+      the canonical way to ship a sibling DLL inside a .NET tool package:
+      PackAsTool packs the entire publish output, so the logger DLL ends up
+      next to the tool exe in tools/<tfm>/any/.
+
+      We use OutputItemType="None" rather than "Content" deliberately: Content
+      items get auto-packaged by NuGet into content/ and contentFiles/ as well,
+      which would duplicate the DLL in the .nupkg and produce NU5100 warnings.
+      None items respect CopyToOutputDirectory but aren't auto-packaged.
+    -->
+    <ProjectReference Include="..\DemoLogger\DemoLogger.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="None"
+                      CopyToOutputDirectory="PreserveNewest"
+                      Private="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      UndefineProperties="TargetFramework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
+
